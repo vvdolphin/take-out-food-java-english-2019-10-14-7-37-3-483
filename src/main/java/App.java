@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /*
@@ -14,7 +16,69 @@ public class App {
 
     public String bestCharge(List<String> inputs) {
         //TODO: write code here
-
-        return null;
+        if (null == inputs) {
+            return null;
+        }
+        List<Item> itemRepositoryAll = itemRepository.findAll();
+        List<SalesPromotion> salesPromotions = salesPromotionRepository.findAll();
+        HashMap<String, Integer> orders = new HashMap(16);
+        int  total1 = 0;
+        int total2= 0;
+        String Msg1 = "============= Order details =============\n";
+        String Msg2 = "============= Order details =============\n";
+        int discount = 0;
+        String Names = "(";
+        for (String item :
+                inputs) {
+            String[] cur  = item.split(" x ");
+            orders.put(cur[0],Integer.valueOf(cur[1]));
+        }
+        for (String key :
+                orders.keySet()) {
+            for (Item repo :
+                    itemRepositoryAll) {
+                if (repo.getId().equals(key)){
+                    SalesPromotion salesPromotion = salesPromotions.get(1);
+                    List<String> relatedorders = salesPromotion.getRelatedItems();
+                    if (relatedorders.contains(key)){
+                        int pro2 = (int) (repo.getPrice()*orders.get(key))/2;
+                        total1 += pro2*2;
+                        total2 += pro2;
+                        Msg1 += repo.getName()+" x "+orders.get(key)+" = " +total1+" yuan ";
+                        Msg2 += repo.getName()+" x "+orders.get(key)+" = " +total2+" yuan ";
+                        discount += pro2;
+                        Names += repo.getName()+",";
+                    }else{
+                        int pro1 = (int) (repo.getPrice()*orders.get(key));
+                        total1 += pro1;
+                        total2 += pro1;
+                        Msg1 += repo.getName()+" x "+orders.get(key)+" = " +total1+" yuan ";
+                        Msg2 += repo.getName()+" x "+orders.get(key)+" = " +total2+" yuan ";
+                    }
+                }
+            }
+        }
+        Msg1 +=  "\n-----------------------------------\n" ;
+        Msg2 +=  "\n-----------------------------------\n" ;
+        if (total1 > 30){
+            total1 -= 6;
+        }else{
+            Msg1 += "In total:"+total1+" yuan";
+            Msg1 += "===================================";
+            return Msg1;
+        }
+        if (total1 <total2){
+            Msg1 +=  "Promotion used:\n" +salesPromotions.get(0).getDisplayName()+"，saving 6 yuan" ;
+            Msg1 +=  "-----------------------------------\n";
+            Msg1 += "Total: "+total1+" yuan\n";
+            Msg1 += "===================================";
+            return  Msg1;
+        }else{
+            Msg2 +=  "Promotion used: \n" +salesPromotions.get(1).getDisplayName()+Names.substring(0,Names.length()-1)+"), saving "+discount+" yuan\n" ;
+            Msg2 +=  "-----------------------------------\n";
+            Msg2 += "Total: "+total2+" yuan\n";
+            Msg2 += "===================================";
+            return Msg2;
+        }
     }
 }
